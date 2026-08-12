@@ -29,6 +29,37 @@ jobs:
         run: |
           echo "tag=$(date -u +%Y%m%d%H%M)" >> "$GITHUB_OUTPUT"
 
+      - name: Сгенерировать ссылки и профили
+        env:
+          TAG: ${{ steps.meta.outputs.tag }}
+        run: |
+          # Happ: geosite прибит к тегу, ссылку с новым LastUpdated надо раздавать заново.
+          JSDELIVR="https://cdn.jsdelivr.net/gh/${GITHUB_REPOSITORY}@${TAG}/release/geosite.dat"
+          python3 make_link.py --client happ --geosite-url "$JSDELIVR" --touch | head -1 > dist/link.txt
+
+          # INCY: профиль лежит по постоянному URL и обновляется сам, поэтому внутри него
+          # geosite тоже указывает на постоянный адрес последнего релиза.
+          LATEST="https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/geosite.dat"
+          python3 make_link.py --client incy --geosite-url "$LATEST" --touch \
+            --json-out dist/incy-profile.json | head -1 > dist/incy-link.txt
+
+          PROFILE_URL="https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/release/incy/profile.json"
+          {
+            echo "**Happ** — geosite: \`$JSDELIVR\`"
+            echo
+            echo '```'
+            cat dist/link.txt
+            echo '```'
+            echo
+            echo "**INCY** — автообновляемый профиль (ссылка постоянная, менять не нужно):"
+            echo
+            echo '```'
+            echo "incy://autorouting/onadd/$PROFILE_URL"
+            echo '```'
+            echo
+            echo "Разовый импорт для INCY — в ассете \`incy-link.txt\`."
+          } > dist/notes.md
+
       - name: Закоммитить в ветку release
         env:
           TAG: ${{ steps.meta.outputs.tag }}
@@ -37,26 +68,13 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch origin release:release 2>/dev/null || git branch release
           git worktree add /tmp/release release
-          mkdir -p /tmp/release/release
+          mkdir -p /tmp/release/release /tmp/release/incy
           cp dist/geosite.dat dist/geosite.dat.sha256 /tmp/release/release/
-          git -C /tmp/release add release
+          cp dist/incy-profile.json /tmp/release/incy/profile.json
+          git -C /tmp/release add release incy
           git -C /tmp/release commit -m "geosite $TAG" || echo "нечего коммитить"
           git -C /tmp/release tag "$TAG"
           git -C /tmp/release push origin release --tags
-
-      - name: Сгенерировать happ-ссылку
-        env:
-          TAG: ${{ steps.meta.outputs.tag }}
-        run: |
-          URL="https://cdn.jsdelivr.net/gh/${GITHUB_REPOSITORY}@${TAG}/release/geosite.dat"
-          python3 make_link.py --geosite-url "$URL" --touch | head -1 > dist/link.txt
-          {
-            echo "Geosite: \`$URL\`"
-            echo
-            echo '```'
-            cat dist/link.txt
-            echo '```'
-          } > dist/notes.md
 
       - name: Релиз
         uses: softprops/action-gh-release@v2
@@ -67,3 +85,5 @@ jobs:
             dist/geosite.dat
             dist/geosite.dat.sha256
             dist/link.txt
+            dist/incy-link.txt
+            dist/incy-profile.json

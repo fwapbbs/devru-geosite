@@ -59,7 +59,9 @@ def main():
     blob = b"".join(raw for _, raw in merged)
     out.write_bytes(blob)
     digest = hashlib.sha256(blob).hexdigest()
-    out.with_suffix(".dat.sha256").write_text(f"{digest}  geosite.dat\n")
+    # INCY скачивает {url}.sha256 перед самим файлом и ждёт голый hex — иначе
+    # сравнение не сойдётся и клиент будет качать .dat при каждой проверке.
+    out.with_suffix(".dat.sha256").write_text(digest + "\n")
 
     print(f"\n{out} — {len(blob) / 1e6:.2f} МБ, {len(merged)} категорий")
     for name, raw in merged:

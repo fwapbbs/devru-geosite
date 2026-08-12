@@ -37,6 +37,15 @@ https://github.com/fwapbbs/devru-geosite/releases/latest/download/geosite.dat
 **Happ.** В релизе есть `link.txt` — готовая ссылка `happ://routing/onadd/…`, которая добавляет
 профиль маршрутизации `DevRu` вместе с этим файлом. Ссылку достаточно открыть на устройстве.
 
+**INCY.** Постоянная ссылка с автообновлением профиля — открыть на устройстве:
+
+```
+incy://autorouting/onadd/https://raw.githubusercontent.com/fwapbbs/devru-geosite/release/incy/profile.json
+```
+
+Профиль сам подтягивает свежие списки, ссылку менять не нужно. Для разового импорта без
+автообновления в релизе лежит `incy-link.txt`.
+
 **Xray / v2ray.** Указать файл как `geosite.dat` в каталоге ресурсов ядра и ссылаться на
 категории в правилах маршрутизации:
 
