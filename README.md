@@ -1,73 +1,59 @@
-# happ-routing
+# devru-geosite
 
-Добавление списков [runetfreedom/russia-blocked-geosite](https://github.com/runetfreedom/russia-blocked-geosite)
-(реклама + домены, доступные только изнутри РФ) в routing-профиль Happ.
+Файл `geosite.dat` со списками доменов для маршрутизации трафика в Xray-совместимых клиентах
+(Happ, v2rayNG, v2rayN и другие).
 
-## Почему нельзя просто дать ссылку на .txt
+Пересобирается автоматически каждые 6 часов.
 
-В профиле Happ ровно одно поле `Geositeurl` и одно `Geoipurl` — второй источник не подключить,
-а `.txt` из релизов runetfreedom Happ не понимает: нужен бинарный `geosite.dat` (protobuf).
-Вписать домены прямо в `BlockSites` тоже нельзя: в `category-ads-all` 148 872 домена.
+## Что внутри
 
-Решение: собрать **один** `geosite.dat` = база RoscomVPN + нужные категории runetfreedom
-и положить его на свой хостинг.
+25 категорий: базовый набор для российских пользователей плюс два больших списка.
 
-## Как это опубликовано
-
-`.github/workflows/build-geosite.yml` каждые 6 часов (и по кнопке) пересобирает файл и:
-
-1. кладёт его в ветку `release` под именем `release/geosite.dat` и ставит тег `ГГГГММДДЧЧММ` —
-   раздача идёт через jsdelivr по тегу, кеш иммутабельный:
-   `https://cdn.jsdelivr.net/gh/<репо>@<тег>/release/geosite.dat`;
-2. создаёт GitHub Release с `geosite.dat`, его sha256 и `link.txt` — готовой ссылкой
-   `happ://routing/onadd/…` на этот тег.
-
-Ссылку из `link.txt` отдавать клиентам через тело подписки или HTTP-заголовок `routing:`
-(в Remnawave — в настройках подписки). Ссылку надо обновлять при каждой пересборке: в ней
-зашит и тег geosite, и свежий `LastUpdated`.
-
-## Локально
-
-```bash
-python3 build_geosite.py                  # dist/geosite.dat (~3.9 МБ, 25 категорий)
-python3 make_link.py --geosite-url https://<адрес>/geosite.dat --touch
-```
-
-`--touch` ставит `LastUpdated` = сейчас — **без этого Happ не перекачает геофайлы**, у него
-на устройстве останется старый.
-
-Что появляется в правилах:
-
-| правило | где | доменов |
+| Категория | Доменов | Назначение |
 |---|---|---|
-| `geosite:category-ads-all` | `BlockSites` | 148 872 |
-| `geosite:ru-available-only-inside` | `DirectSites` | 167 |
+| `geosite:category-ads-all` | ~149 000 | реклама и трекеры — блокировка |
+| `geosite:ru-available-only-inside` | ~170 | сайты, доступные только с российских IP — прямое подключение |
+| `geosite:whitelist`, `geosite:category-ru` | | российские ресурсы — прямое подключение |
+| `geosite:category-geoblock-ru` | | ресурсы, закрытые для российских IP — через прокси |
+| `geosite:youtube`, `geosite:telegram`, `geosite:github`, `geosite:google-play` | | через прокси |
+| `geosite:steam`, `geosite:apple`, `geosite:microsoft`, `geosite:epicgames`, `geosite:riot`, `geosite:origin`, `geosite:escapefromtarkov`, `geosite:faceit`, `geosite:twitch`, `geosite:pinterest` | | прямое подключение |
+| `geosite:win-spy`, `geosite:torrent`, `geosite:category-ads`, `geosite:twitch-ads` | | телеметрия, торренты, реклама |
 
-## Вариант без своего хостинга
+Полный список категорий с количеством доменов печатается при сборке.
 
-Только для «доступных изнутри РФ» — их мало, они влезают в саму ссылку:
+## Скачать
 
-```bash
-python3 inline_direct.py --only-new       # routing-inline.json, +30 доменов в DirectSites
-python3 make_link.py -f routing-inline.json --touch
+Свежая версия — во вкладке [Releases](../../releases). Прямые ссылки:
+
+```
+https://cdn.jsdelivr.net/gh/fwapbbs/devru-geosite@<тег>/release/geosite.dat
+https://github.com/fwapbbs/devru-geosite/releases/latest/download/geosite.dat
 ```
 
-Реклама этим способом не добавляется.
+Рядом лежит `geosite.dat.sha256` для проверки целостности.
 
-## Грабли
+## Как подключить
 
-* **Имя профиля.** При импорте профиль с совпадающим `Name` перезаписывается, поэтому профиль
-  назван `DevRu`, а не `RoscomVPN`: иначе апдейт затирал бы пользователю чужой профиль
-  (и наоборот).
-* **Лимит загрузки 3 минуты.** Если геофайлы не скачались за 3 минуты, Happ останавливает
-  процесс и помечает профиль красным. Поэтому берётся `geosite-ru-only.dat` (5,4 МБ), а не
-  полный `geosite.dat` runetfreedom (73 МБ).
-* **`UseChunkFiles: true`** вырезает из .dat только используемые категории — нужно для iOS
-  (лимит 50 МБ памяти у расширения). Оставлять включённым.
-* **`RouteOrder: block-proxy-direct`** — блокировка проверяется первой, поэтому домен из
-  `category-ads-all` заблокируется, даже если он есть в whitelist. Пересечения с текущим
-  профилем: `webvisor.com`, `yandexmetrica.com`, `yandexadexchange.net`, `vk-analytics.ru`
-  (whitelist), `api-adservices.apple.com`, `iadsdk.apple.com` (apple). Если что-то из этого
-  ломает сайты — исключений в Happ нет, придётся вырезать домены из категории при сборке.
-* **Обновления.** runetfreedom пересобирает списки каждые 6 часов. Свой файл надо пересобирать
-  и каждый раз поднимать `LastUpdated` — для этого `.github/workflows/build-geosite.yml`.
+**Happ.** В релизе есть `link.txt` — готовая ссылка `happ://routing/onadd/…`, которая добавляет
+профиль маршрутизации `DevRu` вместе с этим файлом. Ссылку достаточно открыть на устройстве.
+
+**Xray / v2ray.** Указать файл как `geosite.dat` в каталоге ресурсов ядра и ссылаться на
+категории в правилах маршрутизации:
+
+```json
+{ "type": "field", "domain": ["geosite:category-ads-all"], "outboundTag": "block" },
+{ "type": "field", "domain": ["geosite:ru-available-only-inside"], "outboundTag": "direct" }
+```
+
+## Собрать самому
+
+```bash
+python3 build_geosite.py -o dist/geosite.dat
+```
+
+Зависимостей нет, нужен только Python 3.
+
+## Источники
+
+* [hydraponique/roscomvpn-geosite](https://github.com/hydraponique/roscomvpn-geosite) — базовый набор категорий
+* [runetfreedom/russia-blocked-geosite](https://github.com/runetfreedom/russia-blocked-geosite) — реклама и домены, доступные только внутри РФ
