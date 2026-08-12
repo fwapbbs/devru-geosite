@@ -1,0 +1,56 @@
+{
+    "Name": "DevRu",
+    "GlobalProxy": "true",
+    "RemoteDns": "8.8.8.8",
+    "DomesticDns": "77.88.8.8",
+    "RemoteDNSType": "DoH",
+    "RemoteDNSDomain": "https://8.8.8.8/dns-query",
+    "RemoteDNSIP": "8.8.8.8",
+    "DomesticDNSType": "DoH",
+    "DomesticDNSDomain": "https://77.88.8.8/dns-query",
+    "DomesticDNSIP": "77.88.8.8",
+    "Geoipurl": "https://cdn.jsdelivr.net/gh/hydraponique/roscomvpn-geoip@202606070711/release/geoip.dat",
+    "Geositeurl": "https://github.com/fwapbbs/devru-geosite/releases/latest/download/geosite.dat",
+    "LastUpdated": "1786527313",
+    "DnsHosts": {
+        "lkfl2.nalog.ru": "213.24.64.175",
+        "lknpd.nalog.ru": "213.24.64.181"
+    },
+    "DirectSites": [
+        "geosite:private",
+        "geosite:category-ru",
+        "geosite:whitelist",
+        "geosite:ru-available-only-inside",
+        "geosite:microsoft",
+        "geosite:apple",
+        "geosite:epicgames",
+        "geosite:riot",
+        "geosite:escapefromtarkov",
+        "geosite:steam",
+        "geosite:twitch",
+        "geosite:pinterest",
+        "geosite:faceit"
+    ],
+    "DirectIp": [
+        "geoip:private",
+        "geoip:direct"
+    ],
+    "ProxySites": [
+        "geosite:google-play",
+        "geosite:github",
+        "geosite:twitch-ads",
+        "geosite:youtube",
+        "geosite:telegram"
+    ],
+    "ProxyIp": [],
+    "BlockSites": [
+        "geosite:win-spy",
+        "geosite:torrent",
+        "geosite:category-ads",
+        "geosite:category-ads-all"
+    ],
+    "BlockIp": [],
+    "DomainStrategy": "IPIfNonMatch",
+    "FakeDNS": "false",
+    "useChunkFiles": true
+}
