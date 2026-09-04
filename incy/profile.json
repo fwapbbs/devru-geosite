@@ -11,7 +11,7 @@
     "DomesticDNSIP": "77.88.8.8",
     "Geoipurl": "https://cdn.jsdelivr.net/gh/hydraponique/roscomvpn-geoip@202606070711/release/geoip.dat",
     "Geositeurl": "https://github.com/fwapbbs/devru-geosite/releases/latest/download/geosite.dat",
-    "LastUpdated": "1788496787",
+    "LastUpdated": "1788521066",
     "DnsHosts": {
         "lkfl2.nalog.ru": "213.24.64.175",
         "lknpd.nalog.ru": "213.24.64.181"
